@@ -1,0 +1,4 @@
+*.settings
+*.launches
+Release
+Debug
