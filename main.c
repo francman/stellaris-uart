@@ -47,16 +47,23 @@ int main(void)
     SYSCTL_RCGCGPIO_R |= GPIO_PORTA_ENABLE;
 
 //    3. Set the GPIO AFSEL bits for the appropriate pins
-    GPIO_PORTA_AFSEL_R |= GPIO_PORTA_ENABLE_RX;
-    GPIO_PORTA_AFSEL_R |= GPIO_PORTA_ENABLE_TX;
+    GPIO_PORTA_AFSEL_R |= GPIO_PORTA_ENABLE_TX | GPIO_PORTA_ENABLE_RX;
 
 //    4. Configure the GPIO current level and/or slew rate as specified for the mode selected
+//       Left unconfigured for this application. Check Data Sheet for details if needed.
 
 //    5. Configure the PMCn fields in the GPIOPCTL register to assign the UART signals to the appropriate
 //       pins
-    GPIO_PORTA_PCTL_R |= GPIO_PORTA_ENABLE_RX;
-    GPIO_PORTA_PCTL_R |= GPIO_PORTA_ENABLE_TX;
+    GPIO_PORTA_PCTL_R |= (1<<0)|(1<<4);
 
+//    6. Enable Digital Functions for the pins. UART is a form of digital communication
+    GPIO_PORTA_DEN_R = (1<<0) | (1<<1);
+
+
+//*****************************************************************************
+//    UART Serial Configuration. Baud Rate, Parity Bits etc.
+//    Check Data Sheet for options on configuring the parameters below.
+//*****************************************************************************
 //    1. Disable the UART by clearing the UARTEN bit in the UARTCTL register.
     UART0_CTL_R &= ~UART_ENABLE;
 
@@ -77,7 +84,7 @@ int main(void)
 
     while(1)
     {
-        print_string("Enter rgb \n\r");
+        print_string("Enter RGB \n\r");
 
         c = read_char();
         print_char(c);
