@@ -23,23 +23,49 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+#include "inc/tm4c123gh6pm.h"
+
 
 void print_string(char * string);
 void print_char(char c);
 char read_char(void);
+void uart_init(void);
 
-#include "inc/tm4c123gh6pm.h"
+
 #define UART0_ENABLE (1<<0)
 #define GPIO_PORTA_ENABLE (1<<0)
 #define GPIO_PORTA_ENABLE_RX (1<<0)
 #define GPIO_PORTA_ENABLE_TX (1<<1)
 #define UART_ENABLE (1<<0)
-#define UART_PARAMETERS (3<<5)      //8 BIT, NO PARITY, 1 STOP BIT
+#define UART_TX_ENABLE (1<<8)
+#define UART_RX_ENABLE (1<<9)
+#define UART_PARAMETERS (0x60)      //8 BIT, NO PARITY, 1 STOP BIT
 #define SYSTEM_CLOCK (0x0)
 
 int main(void)
 {
+    uart_init();
     char c;
+
+    while(1)
+    {
+        print_string("Enter RGB\n\r");
+
+        c = read_char();
+        print_char(c);
+        print_string("\n\r");
+        switch(c)
+        {
+            case 'r':
+                print_string("red button pressed\n\r");
+                print_string("\n\r");
+            break;
+        }
+    }
+}
+
+void uart_init(void)
+{
 //    1. Enable the UART module using the RCGCUART register
     SYSCTL_RCGCUART_R |= UART0_ENABLE;
 
@@ -57,8 +83,7 @@ int main(void)
     GPIO_PORTA_PCTL_R |= (1<<0)|(1<<4);
 
 //    6. Enable Digital Functions for the pins. UART is a form of digital communication
-    GPIO_PORTA_DEN_R = (1<<0) | (1<<1);
-
+    GPIO_PORTA_DEN_R = (1<<0)|(1<<1);
 
 //*****************************************************************************
 //    UART Serial Configuration. Baud Rate, Parity Bits etc.
@@ -80,24 +105,10 @@ int main(void)
     UART0_CC_R = SYSTEM_CLOCK;
 
 //    6. Enable the UART by setting the UARTEN bit in the UARTCTL register.
-    UART0_CTL_R |= UART_ENABLE;
-
-    while(1)
-    {
-        print_string("Enter RGB \n\r");
-
-        c = read_char();
-        print_char(c);
-        print_string("\n\r");
-        switch(c)
-        {
-            case 'r':
-            break;
-        }
-    }
+    UART0_CTL_R = UART_ENABLE | UART_TX_ENABLE | UART_RX_ENABLE;
 }
 
-char read_char()
+char read_char(void)
 {
     char c;
     while((UART0_FR_R & (1<<4)) != 0);
@@ -107,7 +118,7 @@ char read_char()
 
 void print_char(char c)
 {
-    while (UART0_FR_R & (1<<5) != 0);
+    while ((UART0_FR_R & (1<<5)) != 0);
     UART0_DR_R = c;
 }
 
