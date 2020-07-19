@@ -42,7 +42,7 @@ void uart_init(void);
 #define UART_PARAMETERS (0x60)      //8 BIT, NO PARITY, 1 STOP BIT
 #define SYSTEM_CLOCK (0x0)
 
-int main(void)
+void main(void)
 {
     uart_init();
     char c;
